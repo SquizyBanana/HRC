@@ -15,10 +15,10 @@ dbn.add_edges_from(
     ]
 )
 cpd_user_intent = TabularCPD(
-            variable=("Userintent",0),
+            variable=("Userintent", 0),
             variable_card=4,  # Number of states: forwards, left, right, stop
             values=[[0.7], [0.1], [0.1],[0.1]],  # List of probabilities in the same order as states
-            state_names={'Userintent': ['Forwards', 'Left', 'Right', 'Stop']}
+            state_names={('Userintent',0): ['Forwards', 'Left', 'Right', 'Stop']}
         )
 cpd_gaze_direction = TabularCPD(
             variable=("Gaze",0),
@@ -47,7 +47,7 @@ cpd_previous_direction = TabularCPD(
             ],
             evidence=[("Userintent", 0)],
             evidence_card=[4],
-            state_names={('Userintent', 1): ['Forwards', 'Left', 'Right', 'Stop'],('Userintent',0): ['Forwards', 'Left', 'Right', 'Stop']}
+            state_names={('Userintent', 1): ['Forwards', 'Left', 'Right', 'Stop'],('Userintent', 0): ['Forwards', 'Left', 'Right', 'Stop']}
         )
 
 dbn.add_cpds(cpd_user_intent, cpd_gaze_direction, cpd_previous_direction)
@@ -55,13 +55,15 @@ dbn.add_cpds(cpd_user_intent, cpd_gaze_direction, cpd_previous_direction)
 dbn.check_model()
 inference = VariableElimination(dbn)
 
+print(inference.query([("Userintent", 1)],{("Gaze",0): "GazeLeft"}))
+print(inference.query([("Userintent", 1)],{("Gaze",0): "GazeLeft", ("Userintent",0):"Left"}))
 
-data = np.random.randint(low=0, high=2, size=(1000, 10))
-colnames = []
+# data = np.random.randint(low=0, high=2, size=(1000, 10))
+# colnames = []
 
-for t in range(5):
-    colnames.extend([("Gaze", t), ("Userintent", t)])
+# for t in range(5):
+#     colnames.extend([("Gaze", t), ("Userintent", t)])
 
-df = pd.DataFrame(data, columns=colnames)
-dbn.fit(df)
-print(dbn)
+# df = pd.DataFrame(data, columns=colnames)
+# dbn.fit(df)
+# print(dbn)
