@@ -6,3 +6,6 @@ for i in range(10):
 
 print(agent[1].posterior(["UserIntent"], {"GazeDirection": "GazeLeft"}))
 print(agent[1].posterior(["UserIntent"], {"GazeDirection": "GazeLeft", "PreviousDirection":"PrevLeft"}))
+
+print("===============================")
+print(agent[1].next_step)

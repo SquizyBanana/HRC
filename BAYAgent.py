@@ -2,6 +2,7 @@
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import VariableElimination
+import random
 
 from pgmpy.models import DiscreteBayesianNetwork
 
@@ -15,7 +16,7 @@ class Agent:
             ("UserIntent", "GazeDirection"),
             ("UserIntent", "PreviousDirection")
         ])
-
+        self.dir = "forwards"
 
         from pgmpy.factors.discrete import TabularCPD
 
@@ -68,4 +69,24 @@ class Agent:
         return self.inference.query(variables, evidence)
     
     def next_step(self):
-        pass
+
+        # Generate gaze behaviour
+        self.gaze_int = random.randrange(0, 4, 1)
+        if self.gaze_int == 0:
+            self.gaze = "GazeForwards"
+        elif self.gaze_int == 1:
+            self.gaze = "GazeLeft"
+        elif self.gaze_int == 2:
+            self.gaze = "GazeRight"
+        elif self.gaze_int == 3:
+            self.gaze = "GazeBackLeft"
+        elif self.gaze_int == 4:
+            self.gaze = "GazeBackRight" 
+
+        # Posterior based on gaze behaviour
+        self.next = self.posterior(["UserIntent"], {"GazeDirection": self.gaze, "PreviousDirection":self.prev_dir}).values
+        
+
+        # Store previous direction
+        self.prev_dir = self.dir
+        return self.next
