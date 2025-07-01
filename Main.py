@@ -1,5 +1,6 @@
 from BAYAgent import Agent
 import random
+import numpy as np
 
 agent = []
 
@@ -15,4 +16,8 @@ print(agent[0].position)
 for i in range (15):
     print(agent[0].next_step())
     print(agent[0].position)
+    display = np.zeros([21,21])
+    display[-(agent[0].position[1]+11),agent[0].position[0]+10] = 1
+    print(display)
+
 
