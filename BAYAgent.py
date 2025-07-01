@@ -73,7 +73,7 @@ class Agent:
     def posterior(self, variables, evidence):
         return self.inference.query(variables, evidence)
     
-    def next_step(self):
+    def estimate_next_step(self):
 
         # Generate gaze behaviour
         self.gaze_int = random.randrange(0, 4, 1)
@@ -98,6 +98,62 @@ class Agent:
         self.EstimatedNextValue = max(self.nextArray)
         self.EstimatedNext = list(self.nextArray).index(self.EstimatedNextValue)
 
+
+        # Estimate boundrybox
+
+        # base box
+        self.boundryBox = [[self.position[0],self.position[1]],
+                           [self.position[0]+1,self.position[1]],
+                           [self.position[0]-1,self.position[1]],
+                           [self.position[0],self.position[1]+1],
+                           [self.position[0],self.position[1]-1]
+                           ]
+        
+        # determine estimation box direction
+        if self.EstimatedNext == 1:
+            self.EstimatedHeading = self.position[2]-1
+            if self.EstimatedHeading < 0:
+                self.EstimatedHeading = 3
+        elif self.EstimatedNext == 2:
+            self.EstimatedHeading = self.position[2]+1
+            if self.EstimatedHeading > 3:
+                self.EstimatedHeading = 0
+        else:
+            self.EstimatedHeading = self.position[2]
+        
+        # append estimation box
+
+        if self.EstimatedHeading == 0:
+            self.boundryBox.append([self.position[0],self.position[1]+2])
+            self.boundryBox.append([self.position[0]+1,self.position[1]+1])
+            self.boundryBox.append([self.position[0]-1,self.position[1]+1])
+        elif self.EstimatedHeading == 1:
+            self.boundryBox.append([self.position[0]+1,self.position[1]+1])
+            self.boundryBox.append([self.position[0]+2,self.position[1]])
+            self.boundryBox.append([self.position[0]-1,self.position[1]+1])
+        elif self.EstimatedHeading == 2:
+            self.boundryBox.append([self.position[0],self.position[1]-2])
+            self.boundryBox.append([self.position[0]-1,self.position[1]-1])
+            self.boundryBox.append([self.position[0]+1,self.position[1]-1])
+        elif self.EstimatedHeading == 3:
+            self.boundryBox.append([self.position[0]-1,self.position[1]+1])
+            self.boundryBox.append([self.position[0]-2,self.position[1]])
+            self.boundryBox.append([self.position[0]-1,self.position[1]-1])
+        else:
+            print("Error: undefined estimated rotation")
+        
+        for i in range(len(self.boundryBox)):
+            for j in range(len(self.boundryBox[i])):
+                if self.boundryBox[i][j] < 0:
+                    self.boundryBox[i][j] = 16
+                elif self.boundryBox[i][j] > 16:
+                    self.boundryBox[i][j] = 0
+        
+        return self.boundryBox
+    
+    
+    
+    def do_next_step(self,boundries):
         # Pick the true next state and move there
         picker = random.random()
 
@@ -119,20 +175,20 @@ class Agent:
         if self.dir != "Stop":
             if self.position[2] == 0:
                 self.position[1] = self.position[1] +1
-                if self.position[1] > 8:
-                    self.position[1] = -8
+                if self.position[1] > 16:
+                    self.position[1] = 0
             elif self.position[2] == 1:
                 self.position[0] = self.position[0] +1 
-                if self.position[0] > 8:
-                    self.position[0] = -8
+                if self.position[0] > 16:
+                    self.position[0] = 0
             elif self.position[2] == 2:
                 self.position[1] = self.position[1] -1
-                if self.position[1] < -8:
-                    self.position[1] = 8 
+                if self.position[1] < 0:
+                    self.position[1] = 16 
             elif self.position[2] == 3:
                 self.position[0] = self.position[0] -1
-                if self.position[1] < -8:
-                    self.position[1] = 8
+                if self.position[1] < 0:
+                    self.position[1] = 16
             else:
                 print("Error: undefined rotation")
 
