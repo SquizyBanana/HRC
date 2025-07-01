@@ -9,14 +9,19 @@ from pgmpy.models import DiscreteBayesianNetwork
 
 class Agent:
 
-    def __init__(self):
+    def __init__(self, posX, posY, rot):
         
         # Define the network structure
         model = DiscreteBayesianNetwork([
             ("UserIntent", "GazeDirection"),
             ("UserIntent", "PreviousDirection")
         ])
-        self.dir = "forwards"
+
+        # Preset variables
+        self.dir = "Forwards"
+        self.prev_dir = "PrevForwards"
+        self.position = [posX, posY, rot]
+
 
         from pgmpy.factors.discrete import TabularCPD
 
@@ -84,9 +89,53 @@ class Agent:
             self.gaze = "GazeBackRight" 
 
         # Posterior based on gaze behaviour
-        self.next = self.posterior(["UserIntent"], {"GazeDirection": self.gaze, "PreviousDirection":self.prev_dir}).values
+        self.nextArray = self.posterior(["UserIntent"], {"GazeDirection": self.gaze, "PreviousDirection":self.prev_dir}).values
         
-
         # Store previous direction
-        self.prev_dir = self.dir
-        return self.next
+        self.prev_dir = "Prev" + self.dir
+
+        # Estimate the most likely next state
+        self.EstimatedNextValue = max(self.nextArray)
+        self.EstimatedNext = list(self.nextArray).index(self.EstimatedNextValue)
+
+        # Pick the true next state and move there
+        picker = random.random()
+
+        if picker <= self.nextArray[0]:
+            self.dir = "Forwards"
+        elif picker <= self.nextArray[0] + self.nextArray[1]:
+            self.dir = "Left"
+            self.position[2] = self.position[2] -1
+            if self.position[2] < 0:
+                self.position[2] = 3
+        elif picker <= self.nextArray[0] + self.nextArray[1] + self.nextArray[2]:
+            self.dir = "Right"
+            self.position[2] = self.position[2] +1
+            if self.position[2] > 3:
+                self.position[2] = 0
+        else:
+            self.dir = "Stop"
+        print("RealDir" + self.dir)
+        if self.dir != "Stop":
+            if self.position[2] == 0:
+                self.position[1] = self.position[1] +1
+                if self.position[1] > 10:
+                    self.position[1] = -10
+            elif self.position[2] == 1:
+                self.position[0] = self.position[0] +1 
+                if self.position[0] > 10:
+                    self.position[0] = -10
+            elif self.position[2] == 2:
+                self.position[1] = self.position[1] -1
+                if self.position[1] < -10:
+                    self.position[1] = 10 
+            elif self.position[2] == 3:
+                self.position[0] = self.position[0] -1
+                if self.position[1] < -10:
+                    self.position[1] = 10
+            else:
+                print("Error: undefined rotation")
+
+
+
+        return self.EstimatedNext
