@@ -154,6 +154,10 @@ class Agent:
     
     
     def do_next_step(self,boundries):
+        nogozone = []
+        for i in range(len(boundries)):
+            for j in range(len(boundries[i])):
+                nogozone.append(boundries[i][j])
         # Pick the true next state and move there
         picker = random.random()
 
@@ -191,7 +195,6 @@ class Agent:
                     self.position[1] = 16
             else:
                 print("Error: undefined rotation")
-
 
 
         return self.EstimatedNext
