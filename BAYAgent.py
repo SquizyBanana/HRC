@@ -119,20 +119,20 @@ class Agent:
         if self.dir != "Stop":
             if self.position[2] == 0:
                 self.position[1] = self.position[1] +1
-                if self.position[1] > 10:
-                    self.position[1] = -10
+                if self.position[1] > 8:
+                    self.position[1] = -8
             elif self.position[2] == 1:
                 self.position[0] = self.position[0] +1 
-                if self.position[0] > 10:
-                    self.position[0] = -10
+                if self.position[0] > 8:
+                    self.position[0] = -8
             elif self.position[2] == 2:
                 self.position[1] = self.position[1] -1
-                if self.position[1] < -10:
-                    self.position[1] = 10 
+                if self.position[1] < -8:
+                    self.position[1] = 8 
             elif self.position[2] == 3:
                 self.position[0] = self.position[0] -1
-                if self.position[1] < -10:
-                    self.position[1] = 10
+                if self.position[1] < -8:
+                    self.position[1] = 8
             else:
                 print("Error: undefined rotation")
 
