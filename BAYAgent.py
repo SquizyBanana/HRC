@@ -157,34 +157,35 @@ class Agent:
         for i in range(len(boundries)):
             for j in range(len(boundries[i])):
                 self.nogozone.append(boundries[i][j])
-        print("NGZ: " + str(self.nogozone))
+        
     
     
     def do_next_step(self):
         # Pick the true next state and move there
         picker = random.random()
-        self.nextPosition = [self.position[0],self.position[1]]
+        self.nextPosition = [self.position[0],self.position[1],self.position[2]]
 
         if picker <= self.nextArray[0]:
             self.dir = "Forwards"
         elif picker <= self.nextArray[0] + self.nextArray[1]:
             self.dir = "Left"
-            self.position[2] = self.position[2] -1
-            if self.position[2] < 0:
-                self.position[2] = 3
+            self.nextPosition[2] = self.position[2] -1
+            if self.nextPosition[2] < 0:
+                self.nextPosition[2] = 3
         elif picker <= self.nextArray[0] + self.nextArray[1] + self.nextArray[2]:
             self.dir = "Right"
-            self.position[2] = self.position[2] +1
-            if self.position[2] > 3:
-                self.position[2] = 0
+            self.nextPosition[2] = self.position[2] +1
+            if self.nextPosition[2] > 3:
+                self.nextPosition[2] = 0
         else:
-            self.dir = "Stop"
-        print("RealDir " + self.dir)
-        
+            self.dir = "Stop"        
         
         # break recursion
         if self.depth > 10:
             self.dir = "Stop"
+            self.depth = 0
+
+        print("RealDir " + self.dir)
 
         if self.dir != "Stop":
             if self.position[2] == 0:
@@ -207,13 +208,16 @@ class Agent:
                 print("Error: undefined rotation")
         
         # Start recursion to find different space if proposed is invalid
-        if self.nextPosition in self.nogozone:                
+        self.nextpos = [self.nextPosition[0],self.nextPosition[1]] # Remove the rotation
+        if self.nextpos in self.nogozone:                
             print("in nogozone")
             self.depth = self.depth + 1
             print("Deciding: " + str(self.depth))
-            self.do_next_step()
-        else:
-            self.position[0] = self.nextPosition[0]
-            self.position[1] = self.nextPosition[1]
+            if self.dir != "Stop": # Stopping is always considered safe
+                self.do_next_step()
+        
+        self.position[0] = self.nextPosition[0]
+        self.position[1] = self.nextPosition[1]
+        self.position[2] = self.nextPosition[2]
 
         return self.EstimatedNext
