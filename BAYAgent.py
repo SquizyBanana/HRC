@@ -233,7 +233,7 @@ class Agent:
         self.position[0] = self.nextPosition[0]
         self.position[1] = self.nextPosition[1]
         self.position[2] = self.nextPosition[2]
-
+        self.depth = 0
         return self.EstimatedNext
     
     def rebalanceValues(self,dir):
