@@ -6,7 +6,7 @@ import copy
 
 agent = []
 agents = 8
-debug = False # Debug mode shows much more information that may clutter the screen
+debug = False # Debug mode also prints things like the boundary boxes into the terminal, but this clutters the view quite a lot
 
 # create agents
 for i in range(agents):

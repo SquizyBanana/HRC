@@ -189,7 +189,7 @@ class Agent:
             self.dir = "Stop"        
         
         # break recursion (started when trying to walk into a no-go-zone to find a different direction)
-        if self.depth > 4:
+        if self.depth > 10:
             self.dir = "Stop"
             self.depth = 0
 
@@ -223,7 +223,6 @@ class Agent:
             print("in nogozone")
             self.depth = self.depth + 1
             if self.dir != "Stop":
-                print("Deciding: " + str(self.depth))
                 # Ajust the result from the baysian network to remove the direction that did not work
                 self.rebalanceValues(self.dir) 
         
@@ -239,18 +238,21 @@ class Agent:
     def rebalanceValues(self,dir):
         # If a direction doesn't work, set its likelyhood to 0 and then rebalance scores to add up to 1 again
         if dir == "Forwards":
+            value = self.nextArray[0]
+            self.nextArray[1] = self.nextArray[1] + value/2
+            self.nextArray[2] = self.nextArray[2] + value/2
             self.nextArray[0] = 0
+
         elif dir == "Left":
+            value = self.nextArray[1]
+            self.nextArray[0] = self.nextArray[0] + value/2
+            self.nextArray[3] = self.nextArray[3] + value/2
             self.nextArray[1] = 0
         elif dir == "Right":
+            value = self.nextArray[2]
+            self.nextArray[3] = self.nextArray[3] + value/2
+            self.nextArray[0] = self.nextArray[0] + value/2
             self.nextArray[2] = 0
-        elif dir == "Stop":
-            self.nextArray[3] = 0
-        else:
-            print("Error: RebalanceValues no valid Direction")
-        total = 0
-        for i in range(len(self.nextArray)):
-            total = total+self.nextArray[i]
-        self.nextArray[3] = self.nextArray[3] + (1-total)
+
         
         print("Rebalanced values: " + str(self.nextArray))
