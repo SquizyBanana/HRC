@@ -21,6 +21,8 @@ class Agent:
         self.dir = "Forwards"
         self.prev_dir = "PrevForwards"
         self.position = [posX, posY, rot]
+        self.boundryBox = []
+        self.depth = 0
 
 
         from pgmpy.factors.discrete import TabularCPD
@@ -130,7 +132,7 @@ class Agent:
         elif self.EstimatedHeading == 1:
             self.boundryBox.append([self.position[0]+1,self.position[1]+1])
             self.boundryBox.append([self.position[0]+2,self.position[1]])
-            self.boundryBox.append([self.position[0]-1,self.position[1]+1])
+            self.boundryBox.append([self.position[0]+1,self.position[1]-1])
         elif self.EstimatedHeading == 2:
             self.boundryBox.append([self.position[0],self.position[1]-2])
             self.boundryBox.append([self.position[0]-1,self.position[1]-1])
@@ -141,25 +143,27 @@ class Agent:
             self.boundryBox.append([self.position[0]-1,self.position[1]-1])
         else:
             print("Error: undefined estimated rotation")
-        
         for i in range(len(self.boundryBox)):
             for j in range(len(self.boundryBox[i])):
                 if self.boundryBox[i][j] < 0:
-                    self.boundryBox[i][j] = 16
+                    self.boundryBox[i][j] = 17 + self.boundryBox[i][j]
                 elif self.boundryBox[i][j] > 16:
-                    self.boundryBox[i][j] = 0
+                    self.boundryBox[i][j] = self.boundryBox[i][j] - 17
         
         return self.boundryBox
     
-    
-    
-    def do_next_step(self,boundries):
-        nogozone = []
+    def set_boundries(self,boundries):
+        self.nogozone = []
         for i in range(len(boundries)):
             for j in range(len(boundries[i])):
-                nogozone.append(boundries[i][j])
+                self.nogozone.append(boundries[i][j])
+        print("NGZ: " + str(self.nogozone))
+    
+    
+    def do_next_step(self):
         # Pick the true next state and move there
         picker = random.random()
+        self.nextPosition = [self.position[0],self.position[1]]
 
         if picker <= self.nextArray[0]:
             self.dir = "Forwards"
@@ -175,26 +179,41 @@ class Agent:
                 self.position[2] = 0
         else:
             self.dir = "Stop"
-        print("RealDir" + self.dir)
+        print("RealDir " + self.dir)
+        
+        
+        # break recursion
+        if self.depth > 10:
+            self.dir = "Stop"
+
         if self.dir != "Stop":
             if self.position[2] == 0:
-                self.position[1] = self.position[1] +1
-                if self.position[1] > 16:
-                    self.position[1] = 0
+                self.nextPosition[1] = self.position[1] +1
+                if self.nextPosition[1] > 16:
+                    self.nextPosition[1] = 0
             elif self.position[2] == 1:
-                self.position[0] = self.position[0] +1 
-                if self.position[0] > 16:
-                    self.position[0] = 0
+                self.nextPosition[0] = self.position[0] +1 
+                if self.nextPosition[0] > 16:
+                    self.nextPosition[0] = 0
             elif self.position[2] == 2:
-                self.position[1] = self.position[1] -1
-                if self.position[1] < 0:
-                    self.position[1] = 16 
+                self.nextPosition[1] = self.position[1] -1
+                if self.nextPosition[1] < 0:
+                    self.nextPosition[1] = 16 
             elif self.position[2] == 3:
-                self.position[0] = self.position[0] -1
-                if self.position[1] < 0:
-                    self.position[1] = 16
+                self.nextPosition[0] = self.position[0] -1
+                if self.nextPosition[1] < 0:
+                    self.nextPosition[1] = 16
             else:
                 print("Error: undefined rotation")
-
+        
+        # Start recursion to find different space if proposed is invalid
+        if self.nextPosition in self.nogozone:                
+            print("in nogozone")
+            self.depth = self.depth + 1
+            print("Deciding: " + str(self.depth))
+            self.do_next_step()
+        else:
+            self.position[0] = self.nextPosition[0]
+            self.position[1] = self.nextPosition[1]
 
         return self.EstimatedNext
