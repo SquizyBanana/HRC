@@ -189,7 +189,7 @@ class Agent:
             self.dir = "Stop"        
         
         # break recursion (started when trying to walk into a no-go-zone to find a different direction)
-        if self.depth > 10:
+        if self.depth > 4:
             self.dir = "Stop"
             self.depth = 0
 
