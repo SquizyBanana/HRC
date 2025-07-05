@@ -212,8 +212,9 @@ class Agent:
         if self.nextpos in self.nogozone:                
             print("in nogozone")
             self.depth = self.depth + 1
-            print("Deciding: " + str(self.depth))
-            if self.dir != "Stop": # Stopping is always considered safe
+            if self.dir != "Stop":
+                print("Deciding: " + str(self.depth))
+                self.rebalanceValues(self.dir)
                 self.do_next_step()
         
         self.position[0] = self.nextPosition[0]
@@ -221,3 +222,22 @@ class Agent:
         self.position[2] = self.nextPosition[2]
 
         return self.EstimatedNext
+    
+    def rebalanceValues(self,dir):
+        # If a direction doesn't work, set its likelyhood to 0 and then rebalance scores to add up to 1 again
+        if dir == "Forwards":
+            self.nextArray[0] = 0
+        elif dir == "Left":
+            self.nextArray[1] = 0
+        elif dir == "Right":
+            self.nextArray[2] = 0
+        elif dir == "Stop":
+            self.nextArray[3] = 0
+        else:
+            print("Error: RebalanceValues no valid Direction")
+        total = 0
+        for i in range(len(self.nextArray)):
+            total = total+self.nextArray[i]
+        self.nextArray[3] = self.nextArray[3] + (1-total)
+        
+        print("Rebalanced values: " + str(self.nextArray))
